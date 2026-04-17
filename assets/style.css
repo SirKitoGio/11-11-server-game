@@ -1,0 +1,156 @@
+:root {
+  --bg-color: #0A1128;
+  --neon-magenta: #FF00FF;
+  --neon-cyan: #00FFFF;
+  --neon-green: #39FF14;
+  --neon-red: #FF3131;
+  --text-white: #FFFFFF;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-white);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Mobile View Styles */
+.mobile-container {
+  text-align: center;
+  width: 100%;
+}
+
+.tap-button {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  border: none;
+  background: radial-gradient(circle, var(--neon-magenta) 0%, #a000a0 100%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 0 20px var(--neon-magenta), inset 0 0 15px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.tap-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 40px var(--neon-magenta);
+}
+
+.tap-button:disabled {
+  background: #333;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.counter {
+  font-size: 32px;
+  text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+/* Projector View Styles */
+.projector-container {
+  width: 90%;
+  max-width: 1200px;
+  height: 80%;
+  position: relative;
+}
+
+.admin-controls {
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  background: transparent;
+  color: white;
+  border: 2px solid var(--neon-cyan);
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: var(--neon-cyan);
+  color: black;
+  box-shadow: 0 0 20px var(--neon-cyan);
+}
+
+.btn-magenta {
+  border-color: var(--neon-magenta);
+}
+
+.btn-magenta:hover {
+  background: var(--neon-magenta);
+  box-shadow: 0 0 20px var(--neon-magenta);
+}
+
+/* Overlay States */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  text-align: center;
+}
+
+.overlay.active {
+  display: flex;
+}
+
+.overlay h1 {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.crashed {
+  color: var(--neon-red);
+  text-shadow: 0 0 20px var(--neon-red);
+}
+
+.success {
+  color: var(--neon-green);
+  text-shadow: 0 0 20px var(--neon-green);
+}
+
+.warning-banner {
+  background: var(--neon-red);
+  color: white;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  display: none;
+}
+
+.warning-banner.active {
+  display: block;
+}

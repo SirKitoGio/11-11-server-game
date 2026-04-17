@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.11 Server Survival - Tap</title>
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <div class="mobile-container">
+    <h1 id="status">Waiting for Admin...</h1>
+    <button id="tapBtn" class="tap-button" disabled>Add to Cart</button>
+    <div class="counter">Taps: <span id="tapCount">0</span></div>
+  </div>
+
+  <div id="crashedOverlay" class="overlay">
+    <h1 class="crashed">SYSTEM OVERLOADED<br>11.11 CRASH</h1>
+    <p>The server could not scale fast enough.</p>
+  </div>
+
+  <div id="successOverlay" class="overlay">
+    <h1 class="success">SYSTEM STABLE<br>AI AUTOSCALING SUCCESS</h1>
+    <p>The AI predicted the rush and was ready.</p>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="../assets/firebase-config.js"></script>
+  <script src="../assets/app.js"></script>
+  <script>
+    // Mobile specific logic
+    const tapBtn = document.getElementById('tapBtn');
+    const tapCountDisplay = document.getElementById('tapCount');
+    const statusDisplay = document.getElementById('status');
+    const crashedOverlay = document.getElementById('crashedOverlay');
+    const successOverlay = document.getElementById('successOverlay');
+    
+    let localTaps = 0;
+
+    tapBtn.addEventListener('click', () => {
+      localTaps++;
+      tapCountDisplay.innerText = localTaps;
+      incrementGlobalClicks();
+      
+      // Haptic feedback if supported
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    });
+
+    // Listen for game state from app.js (Firebase)
+    onGameStateChange((state) => {
+      if (state === 'active') {
+        tapBtn.disabled = false;
+        statusDisplay.innerText = "GO GO GO!";
+        crashedOverlay.classList.remove('active');
+        successOverlay.classList.remove('active');
+      } else if (state === 'crashed') {
+        tapBtn.disabled = true;
+        crashedOverlay.classList.add('active');
+      } else if (state === 'success') {
+        tapBtn.disabled = true;
+        successOverlay.classList.add('active');
+      } else {
+        tapBtn.disabled = true;
+        statusDisplay.innerText = "Waiting for Admin...";
+        localTaps = 0;
+        tapCountDisplay.innerText = "0";
+        crashedOverlay.classList.remove('active');
+        successOverlay.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.11 Server Survival - Projector</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="warningBanner" class="warning-banner">[CRITICAL: Booting Backup Server - ETA 5:00]</div>
+
+  <div class="projector-container">
+    <canvas id="liveChart"></canvas>
+    
+    <div class="admin-controls">
+      <button class="btn" onclick="resetGame()">Reset Game</button>
+      <button class="btn btn-magenta" onclick="startRound(1)">Start Round 1 (Reactive)</button>
+      <button class="btn" onclick="startRound(2)">Start Round 2 (Predictive)</button>
+    </div>
+  </div>
+
+  <div id="crashedOverlay" class="overlay">
+    <h1 class="crashed">SYSTEM OVERLOADED<br>11.11 CRASH</h1>
+  </div>
+
+  <div id="successOverlay" class="overlay">
+    <h1 class="success">SYSTEM STABLE<br>AI AUTOSCALING SUCCESS</h1>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="../assets/firebase-config.js"></script>
+  <script src="../assets/app.js"></script>
+  <script>
+    const ctx = document.getElementById('liveChart').getContext('2d');
+    const warningBanner = document.getElementById('warningBanner');
+    const crashedOverlay = document.getElementById('crashedOverlay');
+    const successOverlay = document.getElementById('successOverlay');
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Arrival Rate (λ)',
+            borderColor: '#FF00FF',
+            backgroundColor: 'rgba(255, 0, 255, 0.1)',
+            data: [],
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+          },
+          {
+            label: 'Service Rate (μ)',
+            borderColor: '#00FFFF',
+            backgroundColor: 'rgba(0, 255, 255, 0.1)',
+            data: [],
+            borderWidth: 3,
+            tension: 0.1,
+            fill: true
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+            ticks: { color: 'white' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { display: false }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: 'white', font: { size: 16 } }
+          }
+        },
+        animation: { duration: 0 }
+      }
+    });
+
+    // Game variables
+    let roundType = 0;
+    let serviceRate = 0;
+    let time = 0;
+    let gameInterval;
+
+    function startRound(type) {
+      resetGame();
+      roundType = type;
+      setGameState('active');
+      
+      if (type === 2) {
+        // Predictive: Jump μ ahead immediately
+        serviceRate = 500; // High starting capacity
+      }
+
+      gameInterval = setInterval(() => {
+        time++;
+        const currentArrival = getGlobalClicks();
+        
+        // Logic for μ (Service Rate)
+        if (roundType === 1) {
+          // Reactive: slow linear growth
+          if (currentArrival > 50) {
+            warningBanner.classList.add('active');
+            serviceRate += 5; // Slow increase
+          }
+          if (currentArrival > serviceRate + 100) {
+            endGame('crashed');
+          }
+        } else {
+          // Predictive: stays 20% ahead
+          serviceRate = Math.max(500, currentArrival * 1.2);
+          if (time > 30) endGame('success'); // Round lasts 30s
+        }
+
+        // Update Chart
+        chart.data.labels.push(time);
+        chart.data.datasets[0].data.push(currentArrival);
+        chart.data.datasets[1].data.push(serviceRate);
+        
+        if (chart.data.labels.length > 50) {
+          chart.data.labels.shift();
+          chart.data.datasets[0].data.shift();
+          chart.data.datasets[1].data.shift();
+        }
+        chart.update();
+      }, 500);
+    }
+
+    function resetGame() {
+      clearInterval(gameInterval);
+      setGameState('waiting');
+      resetGlobalClicks();
+      time = 0;
+      serviceRate = 0;
+      chart.data.labels = [];
+      chart.data.datasets[0].data = [];
+      chart.data.datasets[1].data = [];
+      chart.update();
+      warningBanner.classList.remove('active');
+      crashedOverlay.classList.remove('active');
+      successOverlay.classList.remove('active');
+    }
+
+    function endGame(status) {
+      clearInterval(gameInterval);
+      setGameState(status);
+      if (status === 'crashed') crashedOverlay.classList.add('active');
+      if (status === 'success') successOverlay.classList.add('active');
+    }
+
+    onGameStateChange((state) => {
+      if (state === 'waiting') {
+        crashedOverlay.classList.remove('active');
+        successOverlay.classList.remove('active');
+      }
+    });
+  </script>
+</body>
+</html>
