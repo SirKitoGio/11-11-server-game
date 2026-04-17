@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11.11 Server Survival Game</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .card-container {
+      display: flex;
+      gap: 30px;
+      margin-top: 40px;
+    }
+    .card {
+      padding: 30px;
+      border: 2px solid var(--neon-cyan);
+      border-radius: 15px;
+      text-decoration: none;
+      color: white;
+      text-align: center;
+      transition: all 0.3s;
+      width: 200px;
+    }
+    .card:hover {
+      background: var(--neon-cyan);
+      color: black;
+      box-shadow: 0 0 30px var(--neon-cyan);
+    }
+    .card.magenta { border-color: var(--neon-magenta); }
+    .card.magenta:hover { background: var(--neon-magenta); box-shadow: 0 0 30px var(--neon-magenta); }
+    h1 { font-size: 3rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>11.11 Server Survival</h1>
+  <p>Select your interface to begin the simulation.</p>
+
+  <div class="card-container">
+    <a href="/projector/" class="card">
+      <h2>PROJECTOR</h2>
+      <p>Dashboard for the big screen.</p>
+    </a>
+    <a href="/mobile/" class="card magenta">
+      <h2>MOBILE</h2>
+      <p>Player interface for your phone.</p>
+    </a>
+  </div>
+
+  <p style="margin-top: 50px; opacity: 0.5;">MAT C606 - Quantitative Techniques for IT</p>
+</body>
+</html>
