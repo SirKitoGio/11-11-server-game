@@ -1,0 +1,7 @@
+{
+  "name": "11-11-server-game",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "node ./scripts/generate-config.js"
+  }
+}
