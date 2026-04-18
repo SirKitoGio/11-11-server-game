@@ -8,11 +8,13 @@
 </head>
 <body>
   <div id="connectionStatus" class="status-badge status-mock">Mock Mode</div>
+  <div id="coinContainer" class="coin-container"></div>
   
   <div class="mobile-container">
     <h1 id="status">Waiting for Admin...</h1>
     <button id="tapBtn" class="tap-button" disabled>Add to Cart</button>
     <div class="counter">Taps: <span id="tapCount">0</span></div>
+    <div id="systemWarning" class="system-warning">SYSTEM CONGESTED</div>
   </div>
 
   <div id="crashedOverlay" class="overlay">
@@ -47,8 +49,33 @@
       const statusDisplay = document.getElementById('status');
       const crashedOverlay = document.getElementById('crashedOverlay');
       const successOverlay = document.getElementById('successOverlay');
+      const systemWarning = document.getElementById('systemWarning');
+      const coinContainer = document.getElementById('coinContainer');
       
       let localTaps = 0;
+      let coinInterval;
+
+      function spawnCoin() {
+        const coin = document.createElement('div');
+        coin.className = 'coin';
+        const startLeft = Math.random() * (window.innerWidth - 90);
+        coin.style.left = startLeft + 'px';
+        const duration = 4 + Math.random() * 2;
+        coin.style.animationDuration = duration + 's';
+
+        coin.onclick = (e) => {
+          e.stopPropagation();
+          localTaps++;
+          tapCountDisplay.innerText = localTaps;
+          incrementGlobalClicks();
+          coin.remove();
+          // Haptic Feedback
+          if (window.navigator.vibrate) window.navigator.vibrate(30);
+        };
+
+        coinContainer.appendChild(coin);
+        setTimeout(() => { if(coin.parentNode) coin.remove(); }, duration * 1000);
+      }
 
       tapBtn.addEventListener('click', () => {
         localTaps++;
@@ -70,14 +97,23 @@
             statusDisplay.innerText = "GO GO GO!";
             crashedOverlay.classList.remove('active');
             successOverlay.classList.remove('active');
+            // Start spawning coins more frequently
+            clearInterval(coinInterval);
+            coinInterval = setInterval(spawnCoin, 700);
           } else if (state === 'crashed') {
             tapBtn.disabled = true;
             tapBtn.classList.remove('pulse');
             crashedOverlay.classList.add('active');
+            clearInterval(coinInterval);
+            systemWarning.classList.remove('active');
+            coinContainer.innerHTML = '';
           } else if (state === 'success') {
             tapBtn.disabled = true;
             tapBtn.classList.remove('pulse');
             successOverlay.classList.add('active');
+            clearInterval(coinInterval);
+            systemWarning.classList.remove('active');
+            coinContainer.innerHTML = '';
           } else {
             tapBtn.disabled = true;
             tapBtn.classList.remove('pulse');
@@ -86,10 +122,30 @@
             tapCountDisplay.innerText = "0";
             crashedOverlay.classList.remove('active');
             successOverlay.classList.remove('active');
+            clearInterval(coinInterval);
+            systemWarning.classList.remove('active');
+            coinContainer.innerHTML = '';
           }
         });
       }
+
+      // Show warning based on global click activity
+      setInterval(() => {
+        if (typeof getGlobalClicks === 'function') {
+          const clicks = getGlobalClicks();
+          if (clicks > 150) {
+            systemWarning.innerText = "Too many users!";
+            systemWarning.classList.add('active');
+          } else if (clicks > 80) {
+            systemWarning.innerText = "System Congested...";
+            systemWarning.classList.add('active');
+          } else {
+            systemWarning.classList.remove('active');
+          }
+        }
+      }, 1000);
     };
   </script>
 </body>
+</html>
 </html>
