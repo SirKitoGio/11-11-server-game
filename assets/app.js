@@ -113,13 +113,18 @@ function onGameStateChange(callback) {
   }
 }
 
-// Sync currentClicks variable
+// Sync currentClicks and State
 if (!isMock) {
   database.ref('clicks').on('value', (snapshot) => {
     currentClicks = snapshot.val() || 0;
+  });
+  // Check initial state to ensure we aren't stuck
+  database.ref('state').once('value', (snapshot) => {
+    if (!snapshot.exists()) database.ref('state').set('waiting');
   });
 } else {
   mockDb.onValue('clicks', (val) => {
     currentClicks = val || 0;
   });
+  if (!mockDb.get('state')) mockDb.set('state', 'waiting');
 }

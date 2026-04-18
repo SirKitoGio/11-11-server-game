@@ -5,35 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>11.11 Server Survival - Tap</title>
   <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-white);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      transition: background-color 0.5s ease;
+    }
+  </style>
 </head>
 <body>
   <div id="connectionStatus" class="status-badge status-mock">Mock Mode</div>
   <div id="coinContainer" class="coin-container"></div>
   
   <div class="mobile-container">
-    <h1 id="status">Waiting for Admin...</h1>
-    <button id="tapBtn" class="tap-button" disabled>Add to Cart</button>
-    <div class="counter">Taps: <span id="tapCount">0</span></div>
+    <div id="waitingScreen" style="animation: float 3s ease-in-out infinite;">
+      <div class="waiting-sign">
+        <h1 id="status">Waiting for Admin...</h1>
+      </div>
+      <div class="sign-post"></div>
+    </div>
+    
+    <div id="gameScreen" style="display: none;">
+      <button id="tapBtn" class="tap-button">
+        <div class="bag-outline">
+          <span class="shopee-text">Shopee</span>
+          <span class="eleven-eleven">11.11</span>
+        </div>
+      </button>
+    </div>
+    
+    <div class="counter">Total Taps: <span id="tapCount">0</span></div>
     <div id="systemWarning" class="system-warning">SYSTEM CONGESTED</div>
   </div>
 
   <div id="crashedOverlay" class="overlay">
     <h1 class="crashed">SYSTEM OVERLOADED<br>11.11 CRASH</h1>
-    <p>The server could not scale fast enough.</p>
   </div>
 
   <div id="successOverlay" class="overlay">
     <h1 class="success">SYSTEM STABLE<br>AI AUTOSCALING SUCCESS</h1>
-    <p>The AI predicted the rush and was ready.</p>
   </div>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="../assets/app.js"></script>
   <script>
     window.onload = () => {
-      // Connection status check
       const connectionStatus = document.getElementById('connectionStatus');
       if (typeof isLiveMode === 'function' && isLiveMode()) {
         connectionStatus.innerText = "Live: Firebase Connected";
@@ -43,12 +69,10 @@
         connectionStatus.className = "status-badge status-mock";
       }
 
-      // Mobile specific logic
       const tapBtn = document.getElementById('tapBtn');
       const tapCountDisplay = document.getElementById('tapCount');
-      const statusDisplay = document.getElementById('status');
-      const crashedOverlay = document.getElementById('crashedOverlay');
-      const successOverlay = document.getElementById('successOverlay');
+      const waitingScreen = document.getElementById('waitingScreen');
+      const gameScreen = document.getElementById('gameScreen');
       const systemWarning = document.getElementById('systemWarning');
       const coinContainer = document.getElementById('coinContainer');
       
@@ -62,74 +86,47 @@
         coin.style.left = startLeft + 'px';
         const duration = 4 + Math.random() * 2;
         coin.style.animationDuration = duration + 's';
-
-        coin.onclick = (e) => {
-          e.stopPropagation();
-          localTaps++;
-          tapCountDisplay.innerText = localTaps;
-          incrementGlobalClicks();
-          coin.remove();
-          // Haptic Feedback
-          if (window.navigator.vibrate) window.navigator.vibrate(30);
-        };
-
+        coin.onclick = (e) => { e.stopPropagation(); collectTap(); coin.remove(); };
         coinContainer.appendChild(coin);
         setTimeout(() => { if(coin.parentNode) coin.remove(); }, duration * 1000);
       }
 
-      tapBtn.addEventListener('click', () => {
+      function collectTap() {
         localTaps++;
         tapCountDisplay.innerText = localTaps;
         incrementGlobalClicks();
-        
-        // Haptic feedback if supported
-        if (window.navigator.vibrate) {
-          window.navigator.vibrate(50);
-        }
-      });
+        if (window.navigator.vibrate) window.navigator.vibrate(30);
+      }
 
-      // Listen for game state from app.js (Firebase)
+      tapBtn.addEventListener('click', collectTap);
+
       if (typeof onGameStateChange === 'function') {
         onGameStateChange((state) => {
           if (state === 'active') {
-            tapBtn.disabled = false;
+            document.body.classList.add('shopee-active');
+            waitingScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
             tapBtn.classList.add('pulse');
-            statusDisplay.innerText = "GO GO GO!";
-            crashedOverlay.classList.remove('active');
-            successOverlay.classList.remove('active');
-            // Start spawning coins more frequently
             clearInterval(coinInterval);
             coinInterval = setInterval(spawnCoin, 700);
-          } else if (state === 'crashed') {
-            tapBtn.disabled = true;
-            tapBtn.classList.remove('pulse');
-            crashedOverlay.classList.add('active');
-            clearInterval(coinInterval);
-            systemWarning.classList.remove('active');
-            coinContainer.innerHTML = '';
-          } else if (state === 'success') {
-            tapBtn.disabled = true;
-            tapBtn.classList.remove('pulse');
-            successOverlay.classList.add('active');
-            clearInterval(coinInterval);
-            systemWarning.classList.remove('active');
-            coinContainer.innerHTML = '';
-          } else {
-            tapBtn.disabled = true;
-            tapBtn.classList.remove('pulse');
-            statusDisplay.innerText = "Waiting for Admin...";
+          } else if (state === 'waiting') {
+            document.body.classList.remove('shopee-active');
+            waitingScreen.style.display = 'block';
+            gameScreen.style.display = 'none';
             localTaps = 0;
             tapCountDisplay.innerText = "0";
-            crashedOverlay.classList.remove('active');
-            successOverlay.classList.remove('active');
             clearInterval(coinInterval);
-            systemWarning.classList.remove('active');
+            coinContainer.innerHTML = '';
+          } else {
+            // Crashed or Success
+            gameScreen.style.display = 'block';
+            tapBtn.classList.remove('pulse');
+            clearInterval(coinInterval);
             coinContainer.innerHTML = '';
           }
         });
       }
 
-      // Show warning based on global click activity
       setInterval(() => {
         if (typeof getGlobalClicks === 'function') {
           const clicks = getGlobalClicks();
@@ -147,5 +144,4 @@
     };
   </script>
 </body>
-</html>
 </html>

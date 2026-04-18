@@ -1,10 +1,16 @@
 :root {
   --bg-color: #0A1128;
+  --shopee-red: #EE4D2D;
   --neon-magenta: #FF00FF;
   --neon-cyan: #00FFFF;
   --neon-green: #39FF14;
   --neon-red: #FF3131;
   --text-white: #FFFFFF;
+}
+
+/* Add a class for the Shopee background */
+body.shopee-active {
+  background-color: var(--shopee-red);
 }
 
 body {
@@ -21,57 +27,109 @@ body {
   height: 100vh;
 }
 
-/* Mobile View Styles */
-.mobile-container {
-  text-align: center;
-  width: 100%;
+.tap-button {
+  width: 320px;
+  height: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 20px;
+  position: relative;
+  display: inline-block;
+  margin: 40px auto;
 }
 
-.tap-button {
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-  border: none;
-  background: radial-gradient(circle, var(--neon-magenta) 0%, #a000a0 100%);
+/* The Shopping Bag Outline */
+.bag-outline {
+  border: 8px solid white;
+  border-top: none;
+  padding: 10px;
+  position: relative;
+  margin-top: 60px;
+}
+
+/* Bag Handle */
+.bag-outline::before {
+  content: "";
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 90px;
+  border: 8px solid white;
+  border-radius: 50% 50% 0 0;
+  border-bottom: none;
+}
+
+.shopee-text {
   color: white;
-  font-size: 24px;
+  font-family: sans-serif;
+  font-size: 32px;
   font-weight: bold;
-  box-shadow: 0 0 20px var(--neon-magenta), inset 0 0 15px rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
-  text-transform: uppercase;
-  margin-bottom: 20px;
+  margin-bottom: 5px;
+  margin-top: -10px;
+  display: block;
+}
+
+.eleven-eleven {
+  color: white;
+  font-size: 85px;
+  font-weight: 900;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+  letter-spacing: -2px;
+  display: block;
 }
 
 .tap-button:active {
   transform: scale(0.95);
-  box-shadow: 0 0 40px var(--neon-magenta);
-}
-
-.tap-button:disabled {
-  background: #333;
-  box-shadow: none;
-  cursor: not-allowed;
-  opacity: 0.5;
 }
 
 .tap-button.pulse {
-  animation: pulse-animation 1.5s infinite;
+  animation: shopee-pulse 1s infinite;
 }
 
-@keyframes pulse-animation {
-  0% {
-    box-shadow: 0 0 20px var(--neon-magenta);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 50px var(--neon-magenta), 0 0 20px var(--neon-cyan);
-    transform: scale(1.05);
-  }
-  100% {
-    box-shadow: 0 0 20px var(--neon-magenta);
-    transform: scale(1);
-  }
+@keyframes shopee-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+
+.waiting-sign {
+  position: relative;
+  background: #ab7a51; /* Minecraft Oak Wood */
+  border: 6px solid #5d4037; /* Darker wood border */
+  padding: 20px 40px;
+  box-shadow: inset -4px -4px 0px #3e2723, inset 4px 4px 0px #d7a57a;
+  display: inline-block;
+  margin-bottom: 0;
+  z-index: 10;
+}
+
+.waiting-sign h1 {
+  margin: 0;
+  color: #212121; /* Classic Minecraft sign text color */
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 24px;
+  letter-spacing: 2px;
+}
+
+/* Minecraft Sign Post */
+.sign-post {
+  width: 20px;
+  height: 60px;
+  background: #5d4037;
+  margin: -6px auto 20px;
+  border-left: 4px solid #3e2723;
+  border-right: 4px solid #795548;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-15px) rotate(1deg); }
 }
 
 .counter {
