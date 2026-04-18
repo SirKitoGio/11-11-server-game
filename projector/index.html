@@ -34,6 +34,16 @@
   <script src="../assets/firebase-config.js"></script>
   <script src="../assets/app.js"></script>
   <script>
+    // Connection status check
+    const connectionStatus = document.getElementById('connectionStatus');
+    if (isLiveMode()) {
+      connectionStatus.innerText = "Live: Firebase Connected";
+      connectionStatus.className = "status-badge status-live";
+    } else {
+      connectionStatus.innerText = "Mock: Local Only";
+      connectionStatus.className = "status-badge status-mock";
+    }
+
     const ctx = document.getElementById('liveChart').getContext('2d');
     const warningBanner = document.getElementById('warningBanner');
     const crashedOverlay = document.getElementById('crashedOverlay');

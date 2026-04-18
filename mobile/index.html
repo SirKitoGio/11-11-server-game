@@ -29,6 +29,16 @@
   <script src="../assets/firebase-config.js"></script>
   <script src="../assets/app.js"></script>
   <script>
+    // Connection status check
+    const connectionStatus = document.getElementById('connectionStatus');
+    if (isLiveMode()) {
+      connectionStatus.innerText = "Live: Firebase Connected";
+      connectionStatus.className = "status-badge status-live";
+    } else {
+      connectionStatus.innerText = "Mock: Local Only";
+      connectionStatus.className = "status-badge status-mock";
+    }
+
     // Mobile specific logic
     const tapBtn = document.getElementById('tapBtn');
     const tapCountDisplay = document.getElementById('tapCount');
@@ -53,17 +63,21 @@
     onGameStateChange((state) => {
       if (state === 'active') {
         tapBtn.disabled = false;
+        tapBtn.classList.add('pulse');
         statusDisplay.innerText = "GO GO GO!";
         crashedOverlay.classList.remove('active');
         successOverlay.classList.remove('active');
       } else if (state === 'crashed') {
         tapBtn.disabled = true;
+        tapBtn.classList.remove('pulse');
         crashedOverlay.classList.add('active');
       } else if (state === 'success') {
         tapBtn.disabled = true;
+        tapBtn.classList.remove('pulse');
         successOverlay.classList.add('active');
       } else {
         tapBtn.disabled = true;
+        tapBtn.classList.remove('pulse');
         statusDisplay.innerText = "Waiting for Admin...";
         localTaps = 0;
         tapCountDisplay.innerText = "0";

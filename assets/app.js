@@ -16,6 +16,13 @@ try {
   console.error("Firebase failed to load, switching to Mock mode.", e);
 }
 
+/**
+ * Check if the app is connected to Firebase
+ */
+function isLiveMode() {
+  return !isMock;
+}
+
 // --- MOCK DATABASE (LocalStorage fallback for testing) ---
 const mockDb = {
   get: (path) => JSON.parse(localStorage.getItem(path)),

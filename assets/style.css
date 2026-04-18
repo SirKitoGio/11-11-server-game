@@ -55,6 +55,25 @@ body {
   opacity: 0.5;
 }
 
+.tap-button.pulse {
+  animation: pulse-animation 1.5s infinite;
+}
+
+@keyframes pulse-animation {
+  0% {
+    box-shadow: 0 0 20px var(--neon-magenta);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 50px var(--neon-magenta), 0 0 20px var(--neon-cyan);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 20px var(--neon-magenta);
+    transform: scale(1);
+  }
+}
+
 .counter {
   font-size: 32px;
   text-shadow: 0 0 10px var(--neon-cyan);
@@ -153,4 +172,29 @@ body {
 
 .warning-banner.active {
   display: block;
+}
+
+/* Connection Status Badge */
+.status-badge {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  z-index: 1000;
+}
+
+.status-live {
+  background: var(--neon-green);
+  color: black;
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+.status-mock {
+  background: var(--neon-red);
+  color: white;
+  box-shadow: 0 0 10px var(--neon-red);
 }
