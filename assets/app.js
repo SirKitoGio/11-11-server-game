@@ -6,7 +6,7 @@ let isMock = true;
 const firebaseConfig = {
   apiKey: "AIzaSyDDpXY9mFpXYVokl3sk9IBwJbgTL7oSPy0",
   authDomain: "game-1-ff28e.firebaseapp.com",
-  databaseURL: "https://game-1-ff28e-default-rtdb.firebaseio.com",
+  databaseURL: "https://game-1-ff28e-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "game-1-ff28e",
   storageBucket: "game-1-ff28e.firebasestorage.app",
   messagingSenderId: "495737503054",
