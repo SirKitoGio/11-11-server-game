@@ -2,18 +2,30 @@
 let database;
 let isMock = true;
 
+// Hardcoded Firebase Configuration for the presentation
+const firebaseConfig = {
+  apiKey: "AIzaSyDDpXY9mFpXYVokl3sk9IBwJbgTL7oSPy0",
+  authDomain: "game-1-ff28e.firebaseapp.com",
+  databaseURL: "https://game-1-ff28e-default-rtdb.firebaseio.com",
+  projectId: "game-1-ff28e",
+  storageBucket: "game-1-ff28e.firebasestorage.app",
+  messagingSenderId: "495737503054",
+  appId: "1:495737503054:web:a5fa8dda316c81f3def21f",
+  measurementId: "G-0XWZX1E0TG"
+};
+
 try {
-  // Check if firebaseConfig is defined (loaded from firebase-config.js)
-  if (typeof firebaseConfig !== 'undefined' && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+  // Initialize Firebase directly
+  if (typeof firebase !== 'undefined') {
     firebase.initializeApp(firebaseConfig);
     database = firebase.database();
     isMock = false;
-    console.log("Firebase initialized successfully.");
+    console.log("Firebase LIVE mode active.");
   } else {
-    console.warn("Using MOCK mode. Ensure assets/firebase-config.js is loaded with valid keys for Live mode.");
+    console.warn("Firebase SDK not found. Falling back to Mock.");
   }
 } catch (e) {
-  console.error("Firebase failed to load, switching to Mock mode.", e);
+  console.error("Firebase initialization failed:", e);
 }
 
 /**
@@ -51,7 +63,6 @@ function incrementGlobalClicks() {
   } else {
     const val = (mockDb.get('clicks') || 0) + 1;
     mockDb.set('clicks', val);
-    // Trigger local event since 'storage' event doesn't fire in the same tab
     window.dispatchEvent(new StorageEvent('storage', { key: 'clicks', newValue: JSON.stringify(val) }));
   }
 }
