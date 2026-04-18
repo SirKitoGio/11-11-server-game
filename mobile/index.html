@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
+  <div id="connectionStatus" class="status-badge status-mock">Mock Mode</div>
+  
   <div class="mobile-container">
     <h1 id="status">Waiting for Admin...</h1>
     <button id="tapBtn" class="tap-button" disabled>Add to Cart</button>
@@ -28,62 +30,66 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <script src="../assets/app.js"></script>
   <script>
-    // Connection status check
-    const connectionStatus = document.getElementById('connectionStatus');
-    if (isLiveMode()) {
-      connectionStatus.innerText = "Live: Firebase Connected";
-      connectionStatus.className = "status-badge status-live";
-    } else {
-      connectionStatus.innerText = "Mock: Local Only";
-      connectionStatus.className = "status-badge status-mock";
-    }
-
-    // Mobile specific logic
-    const tapBtn = document.getElementById('tapBtn');
-    const tapCountDisplay = document.getElementById('tapCount');
-    const statusDisplay = document.getElementById('status');
-    const crashedOverlay = document.getElementById('crashedOverlay');
-    const successOverlay = document.getElementById('successOverlay');
-    
-    let localTaps = 0;
-
-    tapBtn.addEventListener('click', () => {
-      localTaps++;
-      tapCountDisplay.innerText = localTaps;
-      incrementGlobalClicks();
-      
-      // Haptic feedback if supported
-      if (window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-    });
-
-    // Listen for game state from app.js (Firebase)
-    onGameStateChange((state) => {
-      if (state === 'active') {
-        tapBtn.disabled = false;
-        tapBtn.classList.add('pulse');
-        statusDisplay.innerText = "GO GO GO!";
-        crashedOverlay.classList.remove('active');
-        successOverlay.classList.remove('active');
-      } else if (state === 'crashed') {
-        tapBtn.disabled = true;
-        tapBtn.classList.remove('pulse');
-        crashedOverlay.classList.add('active');
-      } else if (state === 'success') {
-        tapBtn.disabled = true;
-        tapBtn.classList.remove('pulse');
-        successOverlay.classList.add('active');
+    window.onload = () => {
+      // Connection status check
+      const connectionStatus = document.getElementById('connectionStatus');
+      if (typeof isLiveMode === 'function' && isLiveMode()) {
+        connectionStatus.innerText = "Live: Firebase Connected";
+        connectionStatus.className = "status-badge status-live";
       } else {
-        tapBtn.disabled = true;
-        tapBtn.classList.remove('pulse');
-        statusDisplay.innerText = "Waiting for Admin...";
-        localTaps = 0;
-        tapCountDisplay.innerText = "0";
-        crashedOverlay.classList.remove('active');
-        successOverlay.classList.remove('active');
+        connectionStatus.innerText = "Mock: Local Only";
+        connectionStatus.className = "status-badge status-mock";
       }
-    });
+
+      // Mobile specific logic
+      const tapBtn = document.getElementById('tapBtn');
+      const tapCountDisplay = document.getElementById('tapCount');
+      const statusDisplay = document.getElementById('status');
+      const crashedOverlay = document.getElementById('crashedOverlay');
+      const successOverlay = document.getElementById('successOverlay');
+      
+      let localTaps = 0;
+
+      tapBtn.addEventListener('click', () => {
+        localTaps++;
+        tapCountDisplay.innerText = localTaps;
+        incrementGlobalClicks();
+        
+        // Haptic feedback if supported
+        if (window.navigator.vibrate) {
+          window.navigator.vibrate(50);
+        }
+      });
+
+      // Listen for game state from app.js (Firebase)
+      if (typeof onGameStateChange === 'function') {
+        onGameStateChange((state) => {
+          if (state === 'active') {
+            tapBtn.disabled = false;
+            tapBtn.classList.add('pulse');
+            statusDisplay.innerText = "GO GO GO!";
+            crashedOverlay.classList.remove('active');
+            successOverlay.classList.remove('active');
+          } else if (state === 'crashed') {
+            tapBtn.disabled = true;
+            tapBtn.classList.remove('pulse');
+            crashedOverlay.classList.add('active');
+          } else if (state === 'success') {
+            tapBtn.disabled = true;
+            tapBtn.classList.remove('pulse');
+            successOverlay.classList.add('active');
+          } else {
+            tapBtn.disabled = true;
+            tapBtn.classList.remove('pulse');
+            statusDisplay.innerText = "Waiting for Admin...";
+            localTaps = 0;
+            tapCountDisplay.innerText = "0";
+            crashedOverlay.classList.remove('active');
+            successOverlay.classList.remove('active');
+          }
+        });
+      }
+    };
   </script>
 </body>
 </html>
