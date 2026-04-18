@@ -110,7 +110,7 @@
     function startRound(type) {
       resetGame();
       roundType = type;
-      setGameState('active');
+      setGameState(type === 1 ? 'active_reactive' : 'active_predictive');
       
       if (type === 2) {
         serviceRate = 500; 

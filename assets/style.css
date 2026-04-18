@@ -27,36 +27,41 @@ body {
   height: 100vh;
 }
 
-.tap-button {
-  width: 320px;
+.shopee-logo-container {
+  width: 100%;
+  max-width: 350px;
   height: auto;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 20px;
   position: relative;
-  display: inline-block;
-  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 60px auto 40px;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* The Shopping Bag Outline */
 .bag-outline {
   border: 8px solid white;
   border-top: none;
-  padding: 10px;
+  padding: 20px 10px 10px;
   position: relative;
-  margin-top: 60px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Bag Handle */
 .bag-outline::before {
   content: "";
   position: absolute;
-  top: -60px;
+  top: -75px; 
   left: 50%;
   transform: translateX(-50%);
-  width: 130px;
-  height: 90px;
+  width: 140px;
+  height: 90px; 
   border: 8px solid white;
   border-radius: 50% 50% 0 0;
   border-bottom: none;
@@ -67,8 +72,9 @@ body {
   font-family: sans-serif;
   font-size: 32px;
   font-weight: bold;
+  margin-top: -40px; 
   margin-bottom: 5px;
-  margin-top: -10px;
+  text-align: center;
   display: block;
 }
 
@@ -79,6 +85,7 @@ body {
   font-family: 'Arial Black', sans-serif;
   line-height: 1;
   letter-spacing: -2px;
+  text-align: center;
   display: block;
 }
 
@@ -312,6 +319,11 @@ body {
 .system-warning.active {
   opacity: 1;
   animation: blink 0.5s infinite;
+}
+
+.system-warning.success-mode {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green);
 }
 
 @keyframes blink {
