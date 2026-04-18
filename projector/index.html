@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <div id="connectionStatus" class="status-badge status-mock">Mock Mode</div>
   <div id="warningBanner" class="warning-banner">[CRITICAL: Booting Backup Server - ETA 5:00]</div>
 
   <div class="projector-container">
@@ -34,74 +35,78 @@
   <script src="../assets/firebase-config.js"></script>
   <script src="../assets/app.js"></script>
   <script>
-    // Connection status check
-    const connectionStatus = document.getElementById('connectionStatus');
-    if (isLiveMode()) {
-      connectionStatus.innerText = "Live: Firebase Connected";
-      connectionStatus.className = "status-badge status-live";
-    } else {
-      connectionStatus.innerText = "Mock: Local Only";
-      connectionStatus.className = "status-badge status-mock";
-    }
-
-    const ctx = document.getElementById('liveChart').getContext('2d');
-    const warningBanner = document.getElementById('warningBanner');
-    const crashedOverlay = document.getElementById('crashedOverlay');
-    const successOverlay = document.getElementById('successOverlay');
-
-    const chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: 'Arrival Rate (λ)',
-            borderColor: '#FF00FF',
-            backgroundColor: 'rgba(255, 0, 255, 0.1)',
-            data: [],
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true
-          },
-          {
-            label: 'Service Rate (μ)',
-            borderColor: '#00FFFF',
-            backgroundColor: 'rgba(0, 255, 255, 0.1)',
-            data: [],
-            borderWidth: 3,
-            tension: 0.1,
-            fill: true
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-            ticks: { color: 'white' }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { display: false }
-          }
-        },
-        plugins: {
-          legend: {
-            labels: { color: 'white', font: { size: 16 } }
-          }
-        },
-        animation: { duration: 0 }
-      }
-    });
-
-    // Game variables
+    // Global references
+    let chart;
+    let gameInterval;
     let roundType = 0;
     let serviceRate = 0;
     let time = 0;
-    let gameInterval;
+
+    const warningBanner = document.getElementById('warningBanner');
+    const crashedOverlay = document.getElementById('crashedOverlay');
+    const successOverlay = document.getElementById('successOverlay');
+    const connectionStatus = document.getElementById('connectionStatus');
+
+    function initStatus() {
+      if (typeof isLiveMode === 'function' && isLiveMode()) {
+        connectionStatus.innerText = "Live: Firebase Connected";
+        connectionStatus.className = "status-badge status-live";
+      } else {
+        connectionStatus.innerText = "Mock: Local Only";
+        connectionStatus.className = "status-badge status-mock";
+      }
+    }
+
+    function initChart() {
+      const ctx = document.getElementById('liveChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Arrival Rate (λ)',
+              borderColor: '#FF00FF',
+              backgroundColor: 'rgba(255, 0, 255, 0.1)',
+              data: [],
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: 'Service Rate (μ)',
+              borderColor: '#00FFFF',
+              backgroundColor: 'rgba(0, 255, 255, 0.1)',
+              data: [],
+              borderWidth: 3,
+              tension: 0.1,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255, 255, 255, 0.1)' },
+              ticks: { color: 'white' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { display: false }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: 'white', font: { size: 16 } }
+            }
+          },
+          animation: { duration: 0 }
+        }
+      });
+    }
 
     function startRound(type) {
       resetGame();
@@ -109,31 +114,26 @@
       setGameState('active');
       
       if (type === 2) {
-        // Predictive: Jump μ ahead immediately
-        serviceRate = 500; // High starting capacity
+        serviceRate = 500; 
       }
 
       gameInterval = setInterval(() => {
         time++;
         const currentArrival = getGlobalClicks();
         
-        // Logic for μ (Service Rate)
         if (roundType === 1) {
-          // Reactive: slow linear growth
           if (currentArrival > 50) {
             warningBanner.classList.add('active');
-            serviceRate += 5; // Slow increase
+            serviceRate += 5;
           }
           if (currentArrival > serviceRate + 100) {
             endGame('crashed');
           }
         } else {
-          // Predictive: stays 20% ahead
           serviceRate = Math.max(500, currentArrival * 1.2);
-          if (time > 30) endGame('success'); // Round lasts 30s
+          if (time > 30) endGame('success');
         }
 
-        // Update Chart
         chart.data.labels.push(time);
         chart.data.datasets[0].data.push(currentArrival);
         chart.data.datasets[1].data.push(serviceRate);
@@ -153,10 +153,12 @@
       resetGlobalClicks();
       time = 0;
       serviceRate = 0;
-      chart.data.labels = [];
-      chart.data.datasets[0].data = [];
-      chart.data.datasets[1].data = [];
-      chart.update();
+      if (chart) {
+        chart.data.labels = [];
+        chart.data.datasets[0].data = [];
+        chart.data.datasets[1].data = [];
+        chart.update();
+      }
       warningBanner.classList.remove('active');
       crashedOverlay.classList.remove('active');
       successOverlay.classList.remove('active');
@@ -169,12 +171,18 @@
       if (status === 'success') successOverlay.classList.add('active');
     }
 
-    onGameStateChange((state) => {
-      if (state === 'waiting') {
-        crashedOverlay.classList.remove('active');
-        successOverlay.classList.remove('active');
-      }
-    });
+    // Initialize on load
+    window.onload = () => {
+      initStatus();
+      initChart();
+      
+      onGameStateChange((state) => {
+        if (state === 'waiting') {
+          crashedOverlay.classList.remove('active');
+          successOverlay.classList.remove('active');
+        }
+      });
+    };
   </script>
 </body>
 </html>
