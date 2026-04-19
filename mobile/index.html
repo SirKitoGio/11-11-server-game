@@ -36,8 +36,9 @@
     </div>
     
     <div id="gameScreen" style="display: none; width: 100%;">
-      <!-- Removed title for cleaner UI -->
-      <div class="shopee-logo-container">
+      <h1 style="color: white; margin: -120px auto 20px; font-size: 1.5rem; text-transform: uppercase; text-align: center;"></h1>
+      
+      <div class="shopee-logo-container" id="logoBtn">
         <div class="bag-outline">
           <span class="shopee-text">Shopee</span>
           <span class="eleven-eleven">11.11</span>
@@ -45,8 +46,8 @@
       </div>
     </div>
     
-    <div class="counter" style="text-align: center; width: 100%;">Total Taps: <span id="tapCount">0</span></div>
-    <div id="systemWarning" class="system-warning">SYSTEM CONGESTED</div>
+    <div class="counter" style="text-align: center; width: 100%; margin-top: 20px;">Total Collected: <span id="tapCount">0</span></div>
+    <div id="systemWarning" class="system-warning">COLLECT THE COINS!</div>
   </div>
 
   <div id="crashedOverlay" class="overlay">
@@ -54,7 +55,7 @@
   </div>
 
   <div id="successOverlay" class="overlay">
-    <h1 class="success">SYSTEM STABLE<br>AI AUTOSCALING SUCCESS</h1>
+    <h1 class="success">SYSTEM STABLE<br>SUCCESS</h1>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -71,6 +72,7 @@
         connectionStatus.className = "status-badge status-mock";
       }
 
+      const logoBtn = document.getElementById('logoBtn');
       const tapCountDisplay = document.getElementById('tapCount');
       const waitingScreen = document.getElementById('waitingScreen');
       const gameScreen = document.getElementById('gameScreen');
@@ -84,6 +86,14 @@
       let isGameActive = false;
       let currentRoundMode = '';
 
+      function collectTap() {
+        if (!isGameActive) return;
+        localTaps++;
+        tapCountDisplay.innerText = localTaps;
+        incrementGlobalClicks();
+        if (window.navigator.vibrate) window.navigator.vibrate(30);
+      }
+
       function spawnCoin() {
         if (!isGameActive) return;
         const coin = document.createElement('div');
@@ -95,61 +105,52 @@
         
         coin.onclick = (e) => {
           e.stopPropagation();
-          localTaps++;
-          tapCountDisplay.innerText = localTaps;
-          incrementGlobalClicks();
+          collectTap();
           coin.remove();
-          if (window.navigator.vibrate) window.navigator.vibrate(30);
         };
 
         coinContainer.appendChild(coin);
         setTimeout(() => { if(coin.parentNode) coin.remove(); }, duration * 1000);
       }
 
+      logoBtn.addEventListener('click', () => {
+        collectTap();
+      });
+
       if (typeof onGameStateChange === 'function') {
         onGameStateChange((state) => {
+          crashedOverlay.classList.remove('active');
+          successOverlay.classList.remove('active');
+
           if (state && state.startsWith('active')) {
             isGameActive = true;
-            currentRoundMode = state === 'active_reactive' ? 'reactive' : 'predictive';
+            currentRoundMode = (state === 'active_predictive') ? 'predictive' : 'reactive';
+            
             document.body.classList.add('shopee-active');
             waitingScreen.style.display = 'none';
             gameScreen.style.display = 'block';
-            crashedOverlay.classList.remove('active');
-            successOverlay.classList.remove('active');
             
-            if (currentRoundMode === 'predictive') {
-              systemWarning.innerText = "AI SCALING ACTIVE";
-              systemWarning.className = "system-warning active success-mode";
-            } else {
-              systemWarning.className = "system-warning";
-              systemWarning.innerText = "SYSTEM CONGESTED";
-            }
+            systemWarning.classList.remove('active');
+            systemWarning.classList.remove('success-mode');
+            systemWarning.innerText = "COLLECT THE COINS!";
 
             clearInterval(coinInterval);
             coinInterval = setInterval(spawnCoin, 700);
           } else if (state === 'crashed') {
             isGameActive = false;
-            gameScreen.style.display = 'block';
             crashedOverlay.classList.add('active');
-            successOverlay.classList.remove('active');
             clearInterval(coinInterval);
-            systemWarning.classList.remove('active');
             coinContainer.innerHTML = '';
           } else if (state === 'success') {
             isGameActive = false;
-            gameScreen.style.display = 'block';
             successOverlay.classList.add('active');
-            crashedOverlay.classList.remove('active');
             clearInterval(coinInterval);
-            systemWarning.classList.remove('active');
             coinContainer.innerHTML = '';
           } else if (state === 'waiting') {
             isGameActive = false;
             document.body.classList.remove('shopee-active');
             waitingScreen.style.display = 'block';
             gameScreen.style.display = 'none';
-            crashedOverlay.classList.remove('active');
-            successOverlay.classList.remove('active');
             localTaps = 0;
             tapCountDisplay.innerText = "0";
             clearInterval(coinInterval);
@@ -164,11 +165,12 @@
           const clicks = getGlobalClicks();
           if (clicks > 150) {
             systemWarning.innerText = "SYSTEM OVERLOADED!";
-            systemWarning.className = "system-warning active";
+            systemWarning.classList.add('active');
           } else if (clicks > 80) {
             systemWarning.innerText = "SYSTEM CONGESTED...";
-            systemWarning.className = "system-warning active";
+            systemWarning.classList.add('active');
           } else {
+            systemWarning.innerText = "COLLECT THE COINS!";
             systemWarning.classList.remove('active');
           }
         }
